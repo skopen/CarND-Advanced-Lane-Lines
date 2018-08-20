@@ -3,7 +3,6 @@ import cv2
 import numpy as np
 import matplotlib.pyplot as plt
 import matplotlib.image as mpimg
-import glob
 import pickle
 import time
 import datetime
@@ -12,6 +11,8 @@ debug = True
 
 PERSPECTIVE_TRANSFORM = None
 INVERSE_PERSPECTIVE_TRANSFORM = None
+YM_PER_PIX = 3 / (507 - 425)
+XM_PER_PIX = 3.7 / (1011 - 291)
 
 def configureTransformMatrix(forceRecompute):
     global PERSPECTIVE_TRANSFORM, INVERSE_PERSPECTIVE_TRANSFORM
