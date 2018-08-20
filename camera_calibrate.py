@@ -16,7 +16,6 @@ print (imgpoints)
 img = cv2.imread('test_image.png')
 
 
-# TODO: Write a function that takes an image, object points, and image points
 # performs the camera calibration, image distortion correction and
 # returns the undistorted image
 def cal_undistort(img, objpoints, imgpoints):
@@ -29,8 +28,8 @@ def cal_undistort(img, objpoints, imgpoints):
     return undist
 
 # prepare object points
-nx = 8 #TODO: enter the number of inside corners in x
-ny = 6 #TODO: enter the number of inside corners in y
+nx = 8
+ny = 6
 
 # Make a list of calibration images
 #fname = 'calibration_test.png'
