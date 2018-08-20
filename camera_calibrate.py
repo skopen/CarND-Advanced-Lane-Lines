@@ -4,6 +4,8 @@ import matplotlib.pyplot as plt
 import matplotlib.image as mpimg
 import glob
 import pickle
+import time
+import datetime
 
 debug = True
 
@@ -16,9 +18,10 @@ def calibrateCamera (calibrationImgLocation, chessBoardSizeX, chessBoardSizeY, f
     if (forceRecalibrate == False):
         try:
             dist_pickle = pickle.load(open("./my_cached_data/calibration_data.p", "rb"))
+            TIME = dist_pickle["TIME"]
             CAMERA_MATRIX = dist_pickle["CAMERA_MATRIX"]
             DISTORTION_COEFF = dist_pickle["DISTORTION_COEFF"]
-            if debug: print("Loaded prior calibration data. Send forceRecalibrate=True for recomputation.")
+            if debug: print("Loaded prior calibration data from " + TIME + ". Send forceRecalibrate=True for recomputation.")
             return
         except:
             print("Could not load from prior calibration data. Recomputing calibration...")
@@ -59,7 +62,7 @@ def calibrateCamera (calibrationImgLocation, chessBoardSizeX, chessBoardSizeY, f
         DISTORTION_COEFF = dist
 
     print ("Saving distortion coefficients and matrix for future calculations...")
-    dist_pickle = {"CAMERA_MATRIX":CAMERA_MATRIX, "DISTORTION_COEFF": DISTORTION_COEFF}
+    dist_pickle = {"TIME":datetime.datetime.fromtimestamp(time.time()).strftime('%Y-%m-%d %H:%M:%S'), "CAMERA_MATRIX":CAMERA_MATRIX, "DISTORTION_COEFF": DISTORTION_COEFF}
     pickle.dump(dist_pickle, open("./my_cached_data/calibration_data.p", "wb"))
 
 
