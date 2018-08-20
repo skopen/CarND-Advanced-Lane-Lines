@@ -1,58 +1,80 @@
-import pickle
 import cv2
 import numpy as np
 import matplotlib.pyplot as plt
 import matplotlib.image as mpimg
+import glob
+import pickle
 
-# Read in the saved objpoints and imgpoints
-dist_pickle = pickle.load(open("wide_dist_pickle.p", "rb"))
-objpoints = dist_pickle["objpoints"]
-imgpoints = dist_pickle["imgpoints"]
+debug = True
 
-print (objpoints)
-print (imgpoints)
+DISTORTION_COEFF = None
+CAMERA_MATRIX = None
 
-# Read in an image
-img = cv2.imread('test_image.png')
+def calibrateCamera (calibrationImgLocation, chessBoardSizeX, chessBoardSizeY, forceRecalibrate):
+    global CAMERA_MATRIX, DISTORTION_COEFF
+
+    if (forceRecalibrate == False):
+        try:
+            dist_pickle = pickle.load(open("./my_cached_data/calibration_data.p", "rb"))
+            CAMERA_MATRIX = dist_pickle["CAMERA_MATRIX"]
+            DISTORTION_COEFF = dist_pickle["DISTORTION_COEFF"]
+            if debug: print("Loaded prior calibration. Send forceRecalibrate=True for recomputation.")
+            return
+        except:
+            print("Could not load from prior calibration data. Recomputing calibration...")
+            pass
+
+    calibrationImages = glob.glob(calibrationImgLocation + "/calibration*.jpg")
+    objPoints = [] # 3D points in real world space
+    imgPoints = [] # 2D points in image space
+    objp = np.zeros((chessBoardSizeX*chessBoardSizeY, 3), np.float32)
+    objp[:, :2] = np.mgrid[0:chessBoardSizeX, 0:chessBoardSizeY].T.reshape(-1, 2) # x, y, coordinates
+
+    # i = 0
+
+    for fname in calibrationImages:
+        print("Processing calibration image: " + fname)
+
+        # read the image
+        img = mpimg.imread(fname)
+
+        # convert to grayscale
+        gray = cv2.cvtColor(img, cv2.COLOR_BGR2GRAY)
+
+        # find chessboard corners
+        ret, corners = cv2.findChessboardCorners(gray, (chessBoardSizeX, chessBoardSizeY), None)
+
+        if ret == True:
+            imgPoints.append(corners)
+            objPoints.append(objp)
+
+            # i += 1
+            # if i == 1 & debug:
+            #     img = cv2.drawChessboardCorners(img, (chessBoardSizeX, chessBoardSizeY), corners, ret)
+            #     plt.imshow(img)
+            #     plt.show()
+
+        ret, mtx, dist, rvecs, tvecs = cv2.calibrateCamera(objPoints, imgPoints, gray.shape[::-1], None, None)
+        CAMERA_MATRIX = mtx
+        DISTORTION_COEFF = dist
+
+    print ("Saving distortion coefficients and matrix for future calculations...")
+    dist_pickle = {"CAMERA_MATRIX":CAMERA_MATRIX, "DISTORTION_COEFF": DISTORTION_COEFF}
+    pickle.dump(dist_pickle, open("./my_cached_data/calibration_data.p", "wb"))
 
 
-# performs the camera calibration, image distortion correction and
+# Performs image distortion correction based on the computed distortion coefficients and camera matrix
 # returns the undistorted image
-def cal_undistort(img, objpoints, imgpoints):
-    gray = cv2.cvtColor(img, cv2.COLOR_RGB2GRAY)
+def undistortImage (img):
+    if debug: print("Undistorting with... " + str(DISTORTION_COEFF))
 
-    # Use cv2.calibrateCamera() and cv2.undistort()
-    ret, mtx, dist, rvecs, tvecs = cv2.calibrateCamera(objpoints, imgpoints, gray.shape[::-1], None, None)
-    undist = cv2.undistort(img, mtx, dist, None, mtx)
+    undist = cv2.undistort(img, CAMERA_MATRIX, DISTORTION_COEFF, None, CAMERA_MATRIX)
+
+    if debug:
+        plt.imshow(undist)
+        plt.show()
 
     return undist
 
-# prepare object points
-nx = 8
-ny = 6
-
-# Make a list of calibration images
-#fname = 'calibration_test.png'
-#img = cv2.imread(fname)
-
-# Convert to grayscale
-gray = cv2.cvtColor(img, cv2.COLOR_BGR2GRAY)
-
-# Find the chessboard corners
-ret, corners = cv2.findChessboardCorners(gray, (nx, ny), None)
-
-undistorted = cal_undistort(img, objpoints, imgpoints)
-
-
-f, (ax1, ax2, ax3) = plt.subplots(1, 3, figsize=(24, 9))
-f.tight_layout()
-ax1.imshow(img)
-ax1.set_title('Original Image', fontsize=10)
-ax2.imshow(undistorted)
-ax2.set_title('Undistorted Image', fontsize=10)
-
-ax3.imshow(gray)
-
-plt.subplots_adjust(left=0., right=1, top=0.9, bottom=0.)
-
-plt.show()
+def printInfo():
+    print (CAMERA_MATRIX)
