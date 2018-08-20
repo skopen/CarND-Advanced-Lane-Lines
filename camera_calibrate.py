@@ -7,7 +7,7 @@ import pickle
 import time
 import datetime
 
-debug = True
+debug = False
 
 DISTORTION_COEFF = None
 CAMERA_MATRIX = None
