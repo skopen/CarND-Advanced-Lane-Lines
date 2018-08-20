@@ -18,7 +18,7 @@ def calibrateCamera (calibrationImgLocation, chessBoardSizeX, chessBoardSizeY, f
             dist_pickle = pickle.load(open("./my_cached_data/calibration_data.p", "rb"))
             CAMERA_MATRIX = dist_pickle["CAMERA_MATRIX"]
             DISTORTION_COEFF = dist_pickle["DISTORTION_COEFF"]
-            if debug: print("Loaded prior calibration. Send forceRecalibrate=True for recomputation.")
+            if debug: print("Loaded prior calibration data. Send forceRecalibrate=True for recomputation.")
             return
         except:
             print("Could not load from prior calibration data. Recomputing calibration...")
