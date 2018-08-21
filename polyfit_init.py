@@ -108,13 +108,16 @@ def fit_polynomial(binary_warped):
         left_fitx = 1 * ploty ** 2 + 1 * ploty
         right_fitx = 1 * ploty ** 2 + 1 * ploty
 
-    ## Visualization ##
-    # Colors in the left and right lane regions
+    # Visualization ##
+    #Colors in the left and right lane regions
     out_img[lefty, leftx] = [255, 0, 0]
     out_img[righty, rightx] = [0, 0, 255]
 
-    # Plots the left and right polynomials on the lane lines
+    #Plots the left and right polynomials on the lane lines
     # plt.plot(left_fitx, ploty, color='red')
     # plt.plot(right_fitx, ploty, color='red')
+    #
+    # plt.plot(ploty, left_fitx, color='red')
+    # plt.plot(ploty, right_fitx, color='red')
 
-    return out_img
+    return left_fit, right_fit
