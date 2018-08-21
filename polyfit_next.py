@@ -1,25 +1,14 @@
-import cv2
-import numpy as np
 from camera_perspective import *
-import matplotlib.image as mpimg
-import matplotlib.pyplot as plt
-
-# Load our image - this should be a new frame since last time!
-#binary_warped = mpimg.imread('warped_example.jpg')
-
-# Polynomial fit values from the previous frame
-# Make sure to grab the actual values from the previous step in your project!
-#left_fit = np.array([2.13935315e-04, -3.77507980e-01, 4.76902175e+02])
-#right_fit = np.array([4.17622148e-04, -4.93848953e-01, 1.11806170e+03])
+import math
 
 
 def fit_poly(img_shape, leftx, lefty, rightx, righty):
-    ### TO-DO: Fit a second order polynomial to each with np.polyfit() ###
+    ### Fit a second order polynomial to each with np.polyfit() ###
     left_fit = np.polyfit(lefty, leftx, 2)
     right_fit = np.polyfit(righty, rightx, 2)
     # Generate x and y values for plotting
     ploty = np.linspace(0, img_shape[0] - 1, img_shape[0])
-    ### TO-DO: Calc both polynomials using ploty, left_fit and right_fit ###
+    ### Calc both polynomials using ploty, left_fit and right_fit ###
     left_fitx = left_fit[0] * ploty ** 2 + left_fit[1] * ploty + left_fit[2]
     right_fitx = right_fit[0] * ploty ** 2 + right_fit[1] * ploty + right_fit[2]
 
@@ -28,8 +17,6 @@ def fit_poly(img_shape, leftx, lefty, rightx, righty):
 
 def search_around_poly(binary_warped, imgOrigUndist, left_fit, right_fit):
     # HYPERPARAMETER
-    # Choose the width of the margin around the previous polynomial to search
-    # The quiz grader expects 100 here, but feel free to tune on your own!
     margin = 100
 
     # Grab activated pixels
@@ -39,8 +26,6 @@ def search_around_poly(binary_warped, imgOrigUndist, left_fit, right_fit):
 
     ### Set the area of search based on activated x-values ###
     ### within the +/- margin of our polynomial function ###
-    ### Hint: consider the window areas for the similarly named variables ###
-    ### in the previous quiz, but change the windows to our new search area ###
     left_lane_inds = ((nonzerox > (left_fit[0] * (nonzeroy ** 2) + left_fit[1] * nonzeroy +
                                    left_fit[2] - margin)) & (nonzerox < (left_fit[0] * (nonzeroy ** 2) +
                                                                          left_fit[1] * nonzeroy + left_fit[
@@ -72,54 +57,27 @@ def search_around_poly(binary_warped, imgOrigUndist, left_fit, right_fit):
     cv2.fillPoly(color_warp, np.int_([pts]), (0, 255, 0))
 
     # Warp the blank back to original image space using inverse perspective matrix (Minv)
-    #newwarp = cv2.warpPerspective(color_warp, Minv, (imgOrigUndist.shape[1], imgOrigUndist.shape[0]))
     newwarp = inverseTransform(color_warp)
+    #newwarp = color_warp
 
     # Combine the result with the original image
     result = cv2.addWeighted(imgOrigUndist, 1, newwarp, 0.3, 0)
 
-    left_curv, right_curv, offset = getCurvatureAndOffsetInMeters(left_fitx, right_fitx, ploty)
+    left_curv, right_curv, offset, laneConf, curvConf, slopeConf = getFrameStats(left_fitx, right_fitx, ploty)
+    overall_confidence = laneConf*curvConf*slopeConf
 
     # add curvature nad center offset info
     cv2.putText(result, "Rad of Curvature:  Left: " + str(int(left_curv)) + "m", (20, 80), cv2.FONT_HERSHEY_SIMPLEX, 1, (255, 0, 0), 3)
     cv2.putText(result, "Rad of Curvature: Right: " + str(int(right_curv)) + "m", (20, 120), cv2.FONT_HERSHEY_SIMPLEX, 1, (255, 0, 0), 3)
-    cv2.putText(result, "Center offset: " + str(offset) + "m", (20, 160), cv2.FONT_HERSHEY_SIMPLEX, 1, (255, 0, 0), 3)
-
-
-    # ## Visualization ##
-    # # Create an image to draw on and an image to show the selection window
-    # out_img = np.dstack((binary_warped, binary_warped, binary_warped)) * 255
-    # window_img = np.zeros_like(out_img)
-    # # Color in left and right line pixels
-    # out_img[nonzeroy[left_lane_inds], nonzerox[left_lane_inds]] = [255, 0, 0]
-    # out_img[nonzeroy[right_lane_inds], nonzerox[right_lane_inds]] = [0, 0, 255]
-    #
-    # # Generate a polygon to illustrate the search window area
-    # # And recast the x and y points into usable format for cv2.fillPoly()
-    # left_line_window1 = np.array([np.transpose(np.vstack([left_fitx - margin, ploty]))])
-    # left_line_window2 = np.array([np.flipud(np.transpose(np.vstack([left_fitx + margin,
-    #                                                                 ploty])))])
-    # left_line_pts = np.hstack((left_line_window1, left_line_window2))
-    #
-    # right_line_window1 = np.array([np.transpose(np.vstack([right_fitx - margin, ploty]))])
-    # right_line_window2 = np.array([np.flipud(np.transpose(np.vstack([right_fitx + margin,
-    #                                                                  ploty])))])
-    # right_line_pts = np.hstack((right_line_window1, right_line_window2))
-    #
-    # # Draw the lane onto the warped blank image
-    # cv2.fillPoly(window_img, np.int_([left_line_pts]), (0, 255, 0))
-    # cv2.fillPoly(window_img, np.int_([right_line_pts]), (0, 255, 0))
-    #
-    # result = cv2.addWeighted(out_img, 1, window_img, 0.3, 0)
-    #
-    # # Plot the polynomial lines onto the image
-    # plt.plot(left_fitx, ploty, color='yellow')
-    # plt.plot(right_fitx, ploty, color='yellow')
-    # ## End visualization steps ##
+    cv2.putText(result, "Center offset: " + str(round(offset, 2)) + "m", (20, 160), cv2.FONT_HERSHEY_SIMPLEX, 1, (255, 0, 0), 3)
+    cv2.putText(result, "Lane Width Confidence: " + str(round(laneConf, 3)), (20, 200), cv2.FONT_HERSHEY_SIMPLEX, 1, (255, 0, 0), 3)
+    cv2.putText(result, "Curvature Confidence: " + str(round(curvConf, 3)), (20, 240), cv2.FONT_HERSHEY_SIMPLEX, 1, (255, 0, 0), 3)
+    cv2.putText(result, "Slope Confidence: " + str(round(slopeConf, 3)), (20, 280), cv2.FONT_HERSHEY_SIMPLEX, 1, (255, 0, 0), 3)
+    cv2.putText(result, "Overall Confidence: " + str(round(overall_confidence, 3)), (20, 320), cv2.FONT_HERSHEY_SIMPLEX, 1, (255, 0, 0), 3)
 
     return result
 
-def getCurvatureAndOffsetInMeters(left_fitx, right_fitx, ploty):
+def getFrameStats (left_fitx, right_fitx, ploty):
     # Define y-value where we want radius of curvature
     # We'll choose the maximum y-value, corresponding to the bottom of the image
     y_eval = pixY2M(np.max(ploty))
@@ -137,4 +95,27 @@ def getCurvatureAndOffsetInMeters(left_fitx, right_fitx, ploty):
     car_center = pixX2M(1280/2.0)
     offset = lane_center - car_center
 
-    return left_curverad, right_curverad, offset
+    confidence = 1.0
+
+    actualLaneWidth = rightX - leftX
+
+    # lane confidence = 1/e^((actual_lane_width - expected_lane_width)**2)
+    laneWidthConfidence = 1.0 / math.e**(((actualLaneWidth - 3.7)/3.7)**2)
+
+    meanCurv = (left_curverad + right_curverad)/2
+    curvNormalDiff = (right_curverad - left_curverad)/meanCurv
+    curvatureConfidence = 1.0 / math.e**((curvNormalDiff)**2)
+
+    # since most of slopes (note it is dx/dy) we get will be close to 0, we need to apply some additional computation
+    # we will do tan-inverse to get the slope angle, which will also be close to 0, and then add 0.1 to rotate by atan(0.1)
+    # Then do the difference between the computed angles which should be equivalent to comparing with original slopes.
+    slopeLeft = math.atan(2*left_fit_cr[0]*y_eval + left_fit_cr[1]) + 0.1
+    slopeRight = math.atan(2*right_fit_cr[0]*y_eval + right_fit_cr[1]) + 0.1
+    meanSlope = (slopeLeft + slopeRight) / 2
+
+    slopeNormalDiff = (slopeRight - slopeLeft)/meanSlope
+    slopeConfidence = 1.0 / math.e**((slopeNormalDiff)**2)
+
+    return left_curverad, right_curverad, offset, laneWidthConfidence, curvatureConfidence, slopeConfidence
+
+

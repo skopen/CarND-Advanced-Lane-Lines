@@ -7,12 +7,17 @@ import pickle
 import time
 import datetime
 
-debug = False
+debug = True
 
 PERSPECTIVE_TRANSFORM = None
 INVERSE_PERSPECTIVE_TRANSFORM = None
-XM_PER_PIX = 3.7 / (1011 - 291)
-YM_PER_PIX = 3 / (507 - 425)
+XM_PER_PIX = 3.7 / (1011 - 200)
+YM_PER_PIX = 3 / (215 - 140)
+
+#old ones...
+#XM_PER_PIX = 3.7 / (1011 - 291)
+#YM_PER_PIX = 3 / (507 - 425)
+
 
 def configureTransformMatrix(forceRecompute):
     global PERSPECTIVE_TRANSFORM, INVERSE_PERSPECTIVE_TRANSFORM
