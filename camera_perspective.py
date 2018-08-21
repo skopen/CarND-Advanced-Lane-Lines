@@ -7,7 +7,7 @@ import pickle
 import time
 import datetime
 
-debug = True
+debug = False
 
 PERSPECTIVE_TRANSFORM = None
 INVERSE_PERSPECTIVE_TRANSFORM = None
@@ -30,11 +30,12 @@ def configureTransformMatrix(forceRecompute):
             pass
 
     src_top_leftx = 582
-    src_bottom_leftx = 240
-
+    src_bottom_leftx = 180
+#7->
+    #src = np.float32([[src_bottom_leftx, 665], [src_top_leftx, 455], [1280 - src_top_leftx, 455], [1280 - src_bottom_leftx, 665]])
     src = np.float32(
-        [[src_bottom_leftx, 665], [src_top_leftx, 455], [1280 - src_top_leftx, 455], [1280 - src_bottom_leftx, 665]])
-    dst = np.float32([[240, 720], [240, 0], [1040, 0], [1040, 720]])
+        [[src_bottom_leftx, 720], [src_top_leftx, 455], [1280 - src_top_leftx, 455], [1280 - src_bottom_leftx, 720]])
+    dst = np.float32([[src_bottom_leftx, 720], [src_bottom_leftx-36, 0], [1280-src_bottom_leftx+45, 0], [1280-src_bottom_leftx, 720]])
 
     PERSPECTIVE_TRANSFORM = cv2.getPerspectiveTransform(src, dst)
     INVERSE_PERSPECTIVE_TRANSFORM = cv2.getPerspectiveTransform(dst, src)
