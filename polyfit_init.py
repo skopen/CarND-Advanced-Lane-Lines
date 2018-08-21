@@ -44,7 +44,7 @@ def find_lane_pixels(binary_warped):
         win_y_low = binary_warped.shape[0] - (window + 1) * window_height
         win_y_high = binary_warped.shape[0] - window * window_height
 
-        ### TO-DO: Find the four below boundaries of the window ###
+        ### Find the four below boundaries of the window ###
         win_xleft_low = leftx_current - margin  # Update this
         win_xleft_high = leftx_current + margin  # Update this
         win_xright_low = rightx_current - margin  # Update this
@@ -56,7 +56,7 @@ def find_lane_pixels(binary_warped):
         cv2.rectangle(out_img, (win_xright_low, win_y_low),
                       (win_xright_high, win_y_high), (0, 255, 0), 2)
 
-        ### TO-DO: Identify the nonzero pixels in x and y within the window ###
+        ### Identify the nonzero pixels in x and y within the window ###
         good_left_inds = ((nonzerox >= win_xleft_low) & (nonzerox < win_xleft_high) & (nonzeroy >= win_y_low) & (
                     nonzeroy < win_y_high)).nonzero()[0]
         good_right_inds = ((nonzerox >= win_xright_low) & (nonzerox < win_xright_high) & (nonzeroy >= win_y_low) & (

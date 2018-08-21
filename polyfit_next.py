@@ -2,10 +2,13 @@ from camera_perspective import *
 import math
 
 
-def fit_poly(img_shape, leftx, lefty, rightx, righty):
-    ### Fit a second order polynomial to each with np.polyfit() ###
-    left_fit = np.polyfit(lefty, leftx, 2)
-    right_fit = np.polyfit(righty, rightx, 2)
+def fit_poly(img_shape, leftx, lefty, rightx, righty, reuseOldFit, left_fit, right_fit):
+
+    if (reuseOldFit == False):
+        ### Fit a second order polynomial to each with np.polyfit() ###
+        left_fit = np.polyfit(lefty, leftx, 2)
+        right_fit = np.polyfit(righty, rightx, 2)
+
     # Generate x and y values for plotting
     ploty = np.linspace(0, img_shape[0] - 1, img_shape[0])
     ### Calc both polynomials using ploty, left_fit and right_fit ###
@@ -15,7 +18,7 @@ def fit_poly(img_shape, leftx, lefty, rightx, righty):
     return left_fitx, right_fitx, ploty, left_fit, right_fit
 
 
-def search_around_poly(binary_warped, imgOrigUndist, left_fit, right_fit):
+def search_around_poly(binary_warped, imgOrigUndist, left_fit, right_fit, reuseOldFit):
     # HYPERPARAMETER
     margin = 100
 
@@ -42,7 +45,7 @@ def search_around_poly(binary_warped, imgOrigUndist, left_fit, right_fit):
     righty = nonzeroy[right_lane_inds]
 
     # Fit new polynomials
-    left_fitx, right_fitx, ploty, left_fit, right_fit = fit_poly(binary_warped.shape, leftx, lefty, rightx, righty)
+    left_fitx, right_fitx, ploty, left_fit, right_fit = fit_poly(binary_warped.shape, leftx, lefty, rightx, righty, reuseOldFit, left_fit, right_fit)
 
     # Create an image to draw the lines on
     warp_zero = np.zeros_like(binary_warped).astype(np.uint8)
@@ -75,7 +78,8 @@ def search_around_poly(binary_warped, imgOrigUndist, left_fit, right_fit):
     cv2.putText(result, "Slope Confidence: " + str(round(slopeConf, 3)), (20, 280), cv2.FONT_HERSHEY_SIMPLEX, 1, (255, 0, 0), 3)
     cv2.putText(result, "Overall Confidence: " + str(round(overall_confidence, 3)), (20, 320), cv2.FONT_HERSHEY_SIMPLEX, 1, (255, 0, 0), 3)
 
-    return result
+    return result, left_fit, right_fit, overall_confidence
+
 
 def getFrameStats (left_fitx, right_fitx, ploty):
     # Define y-value where we want radius of curvature
@@ -100,11 +104,21 @@ def getFrameStats (left_fitx, right_fitx, ploty):
     actualLaneWidth = rightX - leftX
 
     # lane confidence = 1/e^((actual_lane_width - expected_lane_width)**2)
-    laneWidthConfidence = 1.0 / math.e**(((actualLaneWidth - 3.7)/3.7)**2)
+    laneWidthNormalDiff = ((actualLaneWidth - 3.7) / 3.7) ** 2
+
+    if (laneWidthNormalDiff > 10):
+        laneWidthConfidence = 0.0
+    else:
+        laneWidthConfidence = 1.0 / (math.e**laneWidthNormalDiff)
+
 
     meanCurv = (left_curverad + right_curverad)/2
-    curvNormalDiff = (right_curverad - left_curverad)/meanCurv
-    curvatureConfidence = 1.0 / math.e**((curvNormalDiff)**2)
+    curvNormalDiff = ((right_curverad - left_curverad)/meanCurv)**2
+
+    if (curvNormalDiff > 10):
+        curvatureConfidence = 0.0
+    else:
+        curvatureConfidence = 1.0 / (math.e**curvNormalDiff)
 
     # since most of slopes (note it is dx/dy) we get will be close to 0, we need to apply some additional computation
     # we will do tan-inverse to get the slope angle, which will also be close to 0, and then add 0.1 to rotate by atan(0.1)
@@ -112,9 +126,12 @@ def getFrameStats (left_fitx, right_fitx, ploty):
     slopeLeft = math.atan(2*left_fit_cr[0]*y_eval + left_fit_cr[1]) + 0.1
     slopeRight = math.atan(2*right_fit_cr[0]*y_eval + right_fit_cr[1]) + 0.1
     meanSlope = (slopeLeft + slopeRight) / 2
+    slopeNormalDiff = ((slopeRight - slopeLeft)/meanSlope)**2
 
-    slopeNormalDiff = (slopeRight - slopeLeft)/meanSlope
-    slopeConfidence = 1.0 / math.e**((slopeNormalDiff)**2)
+    if (slopeNormalDiff > 10):
+        slopeConfidence = 0.0
+    else:
+        slopeConfidence = 1.0 / (math.e**slopeNormalDiff)
 
     return left_curverad, right_curverad, offset, laneWidthConfidence, curvatureConfidence, slopeConfidence
 
