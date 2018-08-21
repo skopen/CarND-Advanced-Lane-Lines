@@ -11,8 +11,8 @@ debug = False
 
 PERSPECTIVE_TRANSFORM = None
 INVERSE_PERSPECTIVE_TRANSFORM = None
-YM_PER_PIX = 3 / (507 - 425)
 XM_PER_PIX = 3.7 / (1011 - 291)
+YM_PER_PIX = 3 / (507 - 425)
 
 def configureTransformMatrix(forceRecompute):
     global PERSPECTIVE_TRANSFORM, INVERSE_PERSPECTIVE_TRANSFORM
@@ -58,3 +58,12 @@ def inverseTransform(img):
     imgSize = (img.shape[1], img.shape[0])
     invTx = cv2.warpPerspective(img, INVERSE_PERSPECTIVE_TRANSFORM, imgSize, flags=cv2.INTER_LINEAR)
     return invTx
+
+def covertPixToMeters(x, y):
+    return XM_PER_PIX*x, YM_PER_PIX*y
+
+def pixX2M(x):
+    return XM_PER_PIX*x
+
+def pixY2M(y):
+    return YM_PER_PIX*y

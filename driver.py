@@ -23,7 +23,7 @@ def process_image(imgOrig):
 
 def process_video(inputFile):
     outputFullFile = "output_images/output_" + inputFile
-    clip1 = VideoFileClip(inputFile).subclip(0, 5)
+    clip1 = VideoFileClip(inputFile).subclip(0, 30)
     white_clip = clip1.fl_image(process_image)
     white_clip.write_videofile(outputFullFile, audio=False)
 

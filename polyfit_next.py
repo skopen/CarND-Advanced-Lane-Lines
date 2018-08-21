@@ -78,6 +78,12 @@ def search_around_poly(binary_warped, imgOrigUndist, left_fit, right_fit):
     # Combine the result with the original image
     result = cv2.addWeighted(imgOrigUndist, 1, newwarp, 0.3, 0)
 
+    left_curv, right_curv, offset = getCurvatureAndOffsetInMeters(left_fitx, right_fitx, ploty)
+
+    # add curvature nad center offset info
+    cv2.putText(result, "Rad of Curvature:  Left: " + str(int(left_curv)) + "m", (20, 80), cv2.FONT_HERSHEY_SIMPLEX, 1, (255, 0, 0), 3)
+    cv2.putText(result, "Rad of Curvature: Right: " + str(int(right_curv)) + "m", (20, 120), cv2.FONT_HERSHEY_SIMPLEX, 1, (255, 0, 0), 3)
+    cv2.putText(result, "Center offset: " + str(offset) + "m", (20, 160), cv2.FONT_HERSHEY_SIMPLEX, 1, (255, 0, 0), 3)
 
 
     # ## Visualization ##
@@ -113,10 +119,22 @@ def search_around_poly(binary_warped, imgOrigUndist, left_fit, right_fit):
 
     return result
 
+def getCurvatureAndOffsetInMeters(left_fitx, right_fitx, ploty):
+    # Define y-value where we want radius of curvature
+    # We'll choose the maximum y-value, corresponding to the bottom of the image
+    y_eval = pixY2M(np.max(ploty))
 
-# Run image through the pipeline
-# Note that in your project, you'll also want to feed in the previous fits
-#result = search_around_poly(binary_warped)
+    left_fit_cr = np.polyfit(pixY2M(ploty), pixX2M(left_fitx), 2)
+    right_fit_cr = np.polyfit(pixY2M(ploty), pixX2M(right_fitx), 2)
 
-# View your output
-#plt.imshow(result)
+    #Implement the calculation of R_curve (radius of curvature) #####
+    left_curverad = ((1 + (2 * left_fit_cr[0] * y_eval + left_fit_cr[1]) ** 2) ** 1.5) / np.absolute(2 * left_fit_cr[0])
+    right_curverad = ((1 + (2 * right_fit_cr[0] * y_eval + right_fit_cr[1]) ** 2) ** 1.5) / np.absolute(2 * right_fit_cr[0])
+
+    leftX = left_fit_cr[0]*y_eval**2 + left_fit_cr[1]*y_eval + left_fit_cr[2]
+    rightX = right_fit_cr[0]*y_eval**2 + right_fit_cr[1]*y_eval + right_fit_cr[2]
+    lane_center = (leftX + rightX)/2.0;
+    car_center = pixX2M(1280/2.0)
+    offset = lane_center - car_center
+
+    return left_curverad, right_curverad, offset
