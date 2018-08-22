@@ -113,6 +113,14 @@ def fit_polynomial(binary_warped):
     out_img[lefty, leftx] = [255, 0, 0]
     out_img[righty, rightx] = [0, 0, 255]
 
+    out_img[np.int_(ploty), np.int_(left_fitx)] = [255, 255, 255]
+    out_img[np.int_(ploty), np.int_(right_fitx)] = [255, 255, 255]
+    out_img[np.int_(ploty), np.int_(left_fitx+1)] = [255, 255, 255]
+    out_img[np.int_(ploty), np.int_(right_fitx+1)] = [255, 255, 255]
+    out_img[np.int_(ploty), np.int_(left_fitx-1)] = [255, 255, 255]
+    out_img[np.int_(ploty), np.int_(right_fitx-1)] = [255, 255, 255]
+
+
     #Plots the left and right polynomials on the lane lines
     # plt.plot(left_fitx, ploty, color='red')
     # plt.plot(right_fitx, ploty, color='red')
@@ -120,4 +128,4 @@ def fit_polynomial(binary_warped):
     # plt.plot(ploty, left_fitx, color='red')
     # plt.plot(ploty, right_fitx, color='red')
 
-    return left_fit, right_fit
+    return left_fit, right_fit, out_img

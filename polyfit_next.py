@@ -73,10 +73,10 @@ def search_around_poly(binary_warped, imgOrigUndist, left_fit, right_fit, reuseO
     cv2.putText(result, "Rad of Curvature:  Left: " + str(int(left_curv)) + "m", (20, 80), cv2.FONT_HERSHEY_SIMPLEX, 1, (255, 0, 0), 3)
     cv2.putText(result, "Rad of Curvature: Right: " + str(int(right_curv)) + "m", (20, 120), cv2.FONT_HERSHEY_SIMPLEX, 1, (255, 0, 0), 3)
     cv2.putText(result, "Center offset: " + str(round(offset, 2)) + "m", (20, 160), cv2.FONT_HERSHEY_SIMPLEX, 1, (255, 0, 0), 3)
-    cv2.putText(result, "Lane Width Confidence: " + str(round(laneConf, 3)), (20, 200), cv2.FONT_HERSHEY_SIMPLEX, 1, (255, 0, 0), 3)
-    cv2.putText(result, "Curvature Confidence: " + str(round(curvConf, 3)), (20, 240), cv2.FONT_HERSHEY_SIMPLEX, 1, (255, 0, 0), 3)
-    cv2.putText(result, "Slope Confidence: " + str(round(slopeConf, 3)), (20, 280), cv2.FONT_HERSHEY_SIMPLEX, 1, (255, 0, 0), 3)
-    cv2.putText(result, "Overall Confidence: " + str(round(overall_confidence, 3)), (20, 320), cv2.FONT_HERSHEY_SIMPLEX, 1, (255, 0, 0), 3)
+    #cv2.putText(result, "Lane Width Confidence: " + str(round(laneConf, 3)), (20, 200), cv2.FONT_HERSHEY_SIMPLEX, 1, (255, 0, 0), 3)
+    #cv2.putText(result, "Curvature Confidence: " + str(round(curvConf, 3)), (20, 240), cv2.FONT_HERSHEY_SIMPLEX, 1, (255, 0, 0), 3)
+    #cv2.putText(result, "Slope Confidence: " + str(round(slopeConf, 3)), (20, 280), cv2.FONT_HERSHEY_SIMPLEX, 1, (255, 0, 0), 3)
+    #cv2.putText(result, "Overall Confidence: " + str(round(overall_confidence, 3)), (20, 320), cv2.FONT_HERSHEY_SIMPLEX, 1, (255, 0, 0), 3)
 
     return result, left_fit, right_fit, overall_confidence
 

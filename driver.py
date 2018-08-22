@@ -6,62 +6,73 @@ from polyfit_next import *
 import matplotlib.pyplot as plt
 import matplotlib.image as mpimg
 from moviepy.editor import VideoFileClip
+from main_image_processor import *
+from camera_calibrate import *
+from thresholded_binary import *
+from camera_perspective import *
+from polyfit_init import *
 
-def init (forceFullInit):
-    calibrateCamera ("./camera_cal", 9, 6, forceFullInit)
-    configureTransformMatrix(forceFullInit)
+def processVideos():
+    initProcessor(False)
+    process_video("project_video.mp4")
+    #process_video("challenge_video.mp4")
+    #process_video("harder_challenge_video.mp4")
 
-start = True
-curr_left_fit = None
-curr_right_fit = None
-lowConfidenceRetries = 0
+def processImages():
+    initProcessor(False)
+    imagesNames = ["straight_lines1.jpg", "straight_lines2.jpg", "test1.jpg", "test2.jpg", "test3.jpg", "test4.jpg", "test5.jpg", "test6.jpg"]
+    for fname in imagesNames:
+        print("Processing image: " + fname)
+        # read the image
+        img = mpimg.imread("test_images/" + fname)
+        imgWithLaneMarked = process_image(img)
+        cv2.imwrite("output_images/output_"+fname, imgWithLaneMarked)
 
-def process_image(imgOrig):
+def createSampleUndistortedImage():
+    initProcessor(False)
+    img = mpimg.imread("camera_cal/calibration1.jpg")
+    undist = undistortImage(img)
+    cv2.imwrite("output_images/output_calibration1.jpg", undist)
 
-    global start, curr_left_fit, curr_right_fit, lowConfidenceRetries
+    img = mpimg.imread("test_images/straight_lines1.jpg")
+    undist = undistortImage(img)
+    cv2.imwrite("output_images/output_straight_lines1_undistorted.jpg", undist)
 
-    img = np.copy(imgOrig)
+def createSampleThresholdedBinaryImage():
+    img = mpimg.imread("test_images/straight_lines1.jpg")
+    binImg = createThresholdedBinary(img)
+    color_binary = np.dstack((binImg, binImg, binImg)) * 255
+    cv2.imwrite("output_images/output_straight_lines1_threshold_binary.jpg", color_binary)
+
+def createSampleTramsformedImage():
+    initProcessor(False)
+    img = mpimg.imread("test_images/straight_lines1.jpg")
     imgUndist = undistortImage(img)
     img = createThresholdedBinary(imgUndist)
     imgTrans = transform(img)
-    imgWithLaneMarked = None
+    color_binary = np.dstack((imgTrans, imgTrans, imgTrans)) * 255
+    cv2.imwrite("output_images/output_straight_lines1_transformed.jpg", color_binary)
+
+def plotFittedLane():
+    initProcessor(False)
+
+    img = mpimg.imread("test_images/test2.jpg")
+    imgUndist = undistortImage(img)
+    img = createThresholdedBinary(imgUndist)
+    imgTrans = transform(img)
+    #color_binary = np.dstack((imgTrans, imgTrans, imgTrans)) * 255
+    #left_fit, right_fit = fit_polynomial(imgTrans)
+
+    left_fit, right_fit, result = fit_polynomial(imgTrans)
+
+    #result, left_fit, right_fit, overall_confidence = search_around_poly(imgTrans, imgUndist, left_fit, right_fit, False)
 
 
-    while(True):
-        if (start):
-            start = False
-            leftx, lefty, rightx, righty, out_img = find_lane_pixels(imgTrans)
-            left_fitx, right_fitx, ploty, curr_left_fit, curr_right_fit = fit_poly(imgTrans.shape, leftx, lefty, rightx, righty, False, None, None)
-            imgWithLaneMarked, curr_left_fit, curr_right_fit, overall_confidence = search_around_poly(imgTrans, imgUndist, curr_left_fit, curr_right_fit, False)
-            break
 
-        imgWithLaneMarked, curr_left_fit, curr_right_fit, overall_confidence = search_around_poly(imgTrans, imgUndist, curr_left_fit, curr_right_fit, False)
+    cv2.imwrite("output_images/output_test2_fitted.jpg", result)
 
-        if (overall_confidence < 0.7):
-            lowConfidenceRetries += 1
-            if (lowConfidenceRetries < 4):
-                #print("\nUsing older fit due to low confidence...")
-                imgWithLaneMarked, curr_left_fit, curr_right_fit, overall_confidence = search_around_poly(imgTrans, imgUndist, curr_left_fit, curr_right_fit, True)
-                break
-            else:
-                #print("\nReprocessing from start, did not find a good frame...")
-                start = True
-                lowConfidenceRetries = 0
-        else:
-            lowConfidenceRetries = 0
-            break
-
-    return imgWithLaneMarked
-
-def process_video(inputFile):
-    start = True
-    outputFullFile = "output_images/output_" + inputFile
-    #clip1 = VideoFileClip(inputFile).subclip(0, 5)
-    clip1 = VideoFileClip(inputFile)
-    white_clip = clip1.fl_image(process_image)
-    white_clip.write_videofile(outputFullFile, audio=False)
-
-init(False)
-#process_video("project_video.mp4")
-#process_video("challenge_video.mp4")
-process_video("harder_challenge_video.mp4")
+#processImages()
+#createSampleUndistortedImage()
+#createSampleThresholdedBinaryImage()
+#createSampleTramsformedImage()
+plotFittedLane()
