@@ -1,11 +1,3 @@
-from camera_calibrate import *
-from camera_perspective import *
-from thresholded_binary import *
-from polyfit_init import *
-from polyfit_next import *
-import matplotlib.pyplot as plt
-import matplotlib.image as mpimg
-from moviepy.editor import VideoFileClip
 from main_image_processor import *
 from camera_calibrate import *
 from thresholded_binary import *
@@ -15,8 +7,6 @@ from polyfit_init import *
 def processVideos():
     initProcessor(False)
     process_video("project_video.mp4")
-    #process_video("challenge_video.mp4")
-    #process_video("harder_challenge_video.mp4")
 
 def processImages():
     initProcessor(False)
@@ -60,15 +50,7 @@ def plotFittedLane():
     imgUndist = undistortImage(img)
     img = createThresholdedBinary(imgUndist)
     imgTrans = transform(img)
-    #color_binary = np.dstack((imgTrans, imgTrans, imgTrans)) * 255
-    #left_fit, right_fit = fit_polynomial(imgTrans)
-
     left_fit, right_fit, result = fit_polynomial(imgTrans)
-
-    #result, left_fit, right_fit, overall_confidence = search_around_poly(imgTrans, imgUndist, left_fit, right_fit, False)
-
-
-
     cv2.imwrite("output_images/output_test2_fitted.jpg", result)
 
 #processImages()

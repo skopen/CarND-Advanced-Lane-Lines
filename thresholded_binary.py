@@ -1,7 +1,5 @@
 import numpy as np
 import cv2
-import matplotlib.pyplot as plt
-import matplotlib.image as mpimg
 
 # Edit this function to create your own pipeline.
 def createThresholdedBinary(img, s_thresh=(170, 255), sx_thresh=(20, 100)):
@@ -29,13 +27,3 @@ def createThresholdedBinary(img, s_thresh=(170, 255), sx_thresh=(20, 100)):
     binaryImg = sxbinary | s_binary
 
     return binaryImg
-
-
-# result = createThresholdedBinary(image)
-#
-# # Plot the result
-# f, (ax1, ax2) = plt.subplots(1, 2, figsize=(24, 9))
-# f.tight_layout()
-#
-# ax1.imshow(image)
-# ax1.set_title('Original Image', fontsize=40)

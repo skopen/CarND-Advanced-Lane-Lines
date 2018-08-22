@@ -1,10 +1,7 @@
 from camera_calibrate import *
-from camera_perspective import *
 from thresholded_binary import *
 from polyfit_init import *
 from polyfit_next import *
-import matplotlib.pyplot as plt
-import matplotlib.image as mpimg
 from moviepy.editor import VideoFileClip
 
 def initProcessor (forceFullInit):
@@ -56,7 +53,6 @@ def process_image(imgOrig):
 def process_video(inputFile):
     start = True
     outputFullFile = "output_images/output_" + inputFile
-    #clip1 = VideoFileClip(inputFile).subclip(0, 5)
     clip1 = VideoFileClip(inputFile)
     white_clip = clip1.fl_image(process_image)
     white_clip.write_videofile(outputFullFile, audio=False)
