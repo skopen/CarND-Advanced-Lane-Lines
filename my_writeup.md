@@ -151,5 +151,11 @@ Here's a [link to my video result](./output_images/output_project_video.mp4)
 
 ### Discussion
 
-#### 1. Briefly discuss any problems / issues you faced in your implementation of this project.  Where will your pipeline likely fail?  What could you do to make it more robust?
+Here are the main issues I encountered and some areas of improvement:
 
+1. The toughest part was identification of the lanes. I believe the current algorithm we have used is fairly restrictive.
+I can think of a better and more intuitive algorithm, which I would like to implement.
+2. I am not sure if 2-degree polynomial is the right fit for some road conditions (espcially when field of view is long
+and the road is curvy). I would like to try 3rd degree; we need to see it does not overfit in certain cases.
+3. My algorithm has a harder time when the road has other high gradient features on the the lane. I think this part
+should be augmented with additional algorithms or smoothing methods.
