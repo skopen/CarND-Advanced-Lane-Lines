@@ -53,8 +53,14 @@ def plotFittedLane():
     left_fit, right_fit, result = fit_polynomial(imgTrans)
     cv2.imwrite("output_images/output_test2_fitted.jpg", result)
 
+def drawTransform():
+    configureTransformMatrix(True)
+
+
+#processVideos()
 #processImages()
 #createSampleUndistortedImage()
 #createSampleThresholdedBinaryImage()
 #createSampleTramsformedImage()
-plotFittedLane()
+#plotFittedLane()
+drawTransform()

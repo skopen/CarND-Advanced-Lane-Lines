@@ -33,8 +33,6 @@ def calibrateCamera (calibrationImgLocation, chessBoardSizeX, chessBoardSizeY, f
     objp = np.zeros((chessBoardSizeX*chessBoardSizeY, 3), np.float32)
     objp[:, :2] = np.mgrid[0:chessBoardSizeX, 0:chessBoardSizeY].T.reshape(-1, 2) # x, y, coordinates
 
-    # i = 0
-
     for fname in calibrationImages:
         print("Processing calibration image: " + fname)
 
@@ -50,12 +48,6 @@ def calibrateCamera (calibrationImgLocation, chessBoardSizeX, chessBoardSizeY, f
         if ret == True:
             imgPoints.append(corners)
             objPoints.append(objp)
-
-            # i += 1
-            # if i == 1 & debug:
-            #     img = cv2.drawChessboardCorners(img, (chessBoardSizeX, chessBoardSizeY), corners, ret)
-            #     plt.imshow(img)
-            #     plt.show()
 
         ret, mtx, dist, rvecs, tvecs = cv2.calibrateCamera(objPoints, imgPoints, gray.shape[::-1], None, None)
         CAMERA_MATRIX = mtx

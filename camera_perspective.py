@@ -7,17 +7,12 @@ import pickle
 import time
 import datetime
 
-debug = True
+debug = False
 
 PERSPECTIVE_TRANSFORM = None
 INVERSE_PERSPECTIVE_TRANSFORM = None
 XM_PER_PIX = 3.7 / (1011 - 200)
 YM_PER_PIX = 3 / (215 - 140)
-
-#old ones...
-#XM_PER_PIX = 3.7 / (1011 - 291)
-#YM_PER_PIX = 3 / (507 - 425)
-
 
 def configureTransformMatrix(forceRecompute):
     global PERSPECTIVE_TRANSFORM, INVERSE_PERSPECTIVE_TRANSFORM
@@ -34,13 +29,8 @@ def configureTransformMatrix(forceRecompute):
             print("Could not load from prior transform data. Recomputing transform...")
             pass
 
-    src_top_leftx = 582
-    src_bottom_leftx = 180
-#7->
-    #src = np.float32([[src_bottom_leftx, 665], [src_top_leftx, 455], [1280 - src_top_leftx, 455], [1280 - src_bottom_leftx, 665]])
-    src = np.float32(
-        [[src_bottom_leftx, 720], [src_top_leftx, 455], [1280 - src_top_leftx, 455], [1280 - src_bottom_leftx, 720]])
-    dst = np.float32([[src_bottom_leftx, 720], [src_bottom_leftx-36, 0], [1280-src_bottom_leftx+45, 0], [1280-src_bottom_leftx, 720]])
+    src = np.float32([[180, 720], [582, 455], [700, 455], [1130, 720]])
+    dst = np.float32([[180, 720], [160, 0], [1150, 0], [1130, 720]])
 
     PERSPECTIVE_TRANSFORM = cv2.getPerspectiveTransform(src, dst)
     INVERSE_PERSPECTIVE_TRANSFORM = cv2.getPerspectiveTransform(dst, src)
@@ -50,7 +40,23 @@ def configureTransformMatrix(forceRecompute):
 
     if debug:
         img = mpimg.imread("./test_images/straight_lines1.jpg")
+        cv2.line(img, (src[0][0], src[0][1]), (src[1][0], src[1][1]), [255, 0, 0], 2)
+        cv2.line(img, (src[1][0], src[1][1]), (src[2][0], src[2][1]), [255, 0, 0], 2)
+        cv2.line(img, (src[2][0], src[2][1]), (src[3][0], src[3][1]), [255, 0, 0], 2)
+        cv2.line(img, (src[3][0], src[3][1]), (src[0][0], src[0][1]), [255, 0, 0], 2)
+        cv2.imwrite("./output_images/output_straight_lines1_pre_perspective.jpg", img)
+
+        img = mpimg.imread("./test_images/straight_lines1.jpg")
         txImg = transform(img)
+
+        cv2.line(txImg, (dst[0][0], dst[0][1]), (dst[0][0], 0), [255, 0, 0], 2)
+        cv2.line(txImg, (dst[3][0], dst[3][1]), (dst[3][0], 0), [255, 0, 0], 2)
+
+        cv2.imwrite("./output_images/output_straight_lines1_post_perspective.jpg", txImg)
+
+        plt.imshow(img)
+        plt.show()
+
         plt.imshow(txImg)
         plt.show()
 
